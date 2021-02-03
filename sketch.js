@@ -27,55 +27,8 @@ function mouseClicked() {
 }
   
 function draw() {
-    // background(255)
-    // drawEdges();
-    // if (mouseIsPressed) {
-    //   if(isDrawing) {
-    //     line(startx, starty, mouseX, mouseY);
-    //   } else {
-    //       startx = mouseX;
-    //       starty = mouseY;
-    //       isDrawing = true;
-    //   }
-    // } else {
-    //     if(isDrawing) {
-    //         edges.push({
-    //             startx : startx,1
-    //             starty : starty,
-    //             stopx : mouseX,
-    //             stopy : mouseY
-    //         })
-    //         isDrawing = false;
-    //     }
-    // }
-  }
 
-// function drawEdges() {
-//     for(i = 0; i < edges.length; i++) {
-//         fill(51)
-//         ellipse(edges[i].startx, edges[i].starty, 8)
-//         ellipse(edges[i].stopx, edges[i].stopy, 8)
-//         line(edges[i].startx, edges[i].starty, edges[i].stopx, edges[i].stopy);
-//     }
-
-
-// }
-
-// function drawObstacles() {
-//   for(i = 0; i < obstacles.length; i++) {
-//     for(y = 1; y < obstacles[i].length; y++) {
-//       console.log(obstacles[y-1])
-//       line(obstacles[i][y-1].x, obstacles[i][y - 1].y, obstacles[i][y].x, obstacles[i][y].y)
-//     }
-//     line(obstacles[i][0].x, obstacles[i][0].y, obstacles[i][obstacles[i].length - 1].x, obstacles[i][obstacles[i].length - 1].y)
-//   }
-// }
-
-// function addConnection(startx, starty, stopx, stopy) {
-//     startKey = "" + startx + starty
-//     stopKey = "" + stopx + stopy
-// }
-
+}
 
 // [{x,y},...]
 function Obstacle(vertices) { 
@@ -93,6 +46,8 @@ function Obstacle(vertices) {
     for(i = 1; i < this.vertices.length; i++) {
       let slope = calculateSlope(this.vertices[i].x, this.vertices[i].y, this.vertices[i - 1].x, this.vertices[i - 1].y)
       let yinter = calculateYIntercept(this.vertices[i].x, this.vertices[i].y, slope);
+      console.log(this.vertices[i-1])
+      console.log(this.vertices[i])
       this.lines.push({
         "startx": this.vertices[i-1].x,
         "starty": this.vertices[i-1].y,
@@ -120,14 +75,60 @@ function Obstacle(vertices) {
   //the previous point to determine what side of the polygon I 
   //should consinder "inside".
   this.isCollision = function(x,y) {
+    let prevX = -Infinity
+    let prevY = -Infinity
     for(i = 0; i < this.lines.length; i++) {
       let yinter = this.lines[i].yinter;
       let slope = this.lines[i].slope;
-
+      console.log("checking collision for ("+ mouseX + "," + mouseY + ")"  );
+      console.log(prevX)
+      console.log(prevY)
+      console.log(this.lines[i]);
       if(slope == 0 || slope == Infinity) {
-        
-      } else {
-
+        if(prevX == -Infinity && prevY == -Infinity) {
+          if(this.lines[i].startx == this.lines[i].stopx) {
+            if(x < this.lines[i].stopx) {
+              console.log("1")
+              return false;
+            }
+          } else if(this.lines[i].starty == this.lines[i].stopy) {
+            if(y < this.lines[i].starty) {
+              console.log("2")
+              return false;
+            }
+          }
+          prevX = this.lines[i].startx
+          prevY = this.lines[i].starty
+        } else {
+          if(this.lines[i].startx == this.lines[i].stopx) {
+            if(this.lines[i].stopy > prevY) {
+              if(x < this.lines[i].stopx) {
+                console.log("3")
+                return false;
+              }
+            } else if (this.lines[i].stopy < prevY) {
+              if(x > this.lines[i].stopx) {
+                console.log("4")
+                return false;
+              }
+            }
+            prevX = this.lines[i].startx
+            prevY = this.lines[i].starty
+          } else if(this.lines[i].starty == this.lines[i].stopy) {
+              if(prevY > this.lines[i].stopy && y < this.lines[i].stopy) {
+                console.log("5")
+                return false;
+              } else if(prevY < this.lines[i].stopy && y > this.lines[i].stopy) {
+                console.log("6")
+                return false;
+              }
+              prevX = this.lines[i].startx;
+              prevY = this.lines[i].starty;
+          }
+        }
+      } else if(slope*x + yinter - y > 0) {
+        console.log("calculating slope of slanted line");
+        return false;
       }
     }
     return true;
